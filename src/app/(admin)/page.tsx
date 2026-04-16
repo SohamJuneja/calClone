@@ -1,6 +1,8 @@
-/**
- * This file exists only because Next.js route groups require a page.tsx
- * at the group root to avoid 404s. The real "root" redirect lives in
- * src/app/page.tsx — this file simply mirrors it.
- */
-export { default } from '../page';
+import { redirect } from 'next/navigation';
+
+// Root "/" is handled by app/page.tsx.
+// This file satisfies Next.js route-group conventions without re-exporting,
+// which would break the production file tracer.
+export default function AdminRoot() {
+  redirect('/event-types');
+}
