@@ -1,14 +1,22 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { format, addMinutes, parseISO } from 'date-fns';
-import { CheckCircle, Calendar, Clock, MapPin, Mail, User, ArrowLeft, Printer } from 'lucide-react';
+import { CheckCircle, Calendar, Clock, MapPin, Mail, User, ArrowLeft, Printer, Copy, Check } from 'lucide-react';
 import { getDurationLabel } from '@/lib/utils';
 
 function ConfirmationContent() {
   const params = useSearchParams();
+  const [copied, setCopied] = useState(false);
+
+  function copyUid(uid: string) {
+    navigator.clipboard.writeText(uid).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
 
   const uid      = params.get('uid') ?? '';
   const name     = params.get('name') ?? '';
@@ -76,12 +84,19 @@ function ConfirmationContent() {
           </div>
 
           {uid && (
-            <p className="text-xs text-gray-400 mt-4">
-              Booking ID:{' '}
-              <code className="font-mono bg-gray-100 px-1.5 py-0.5 rounded">
-                {uid.slice(0, 8)}…
-              </code>
-            </p>
+            <div className="mt-4 flex items-center justify-between gap-2 bg-gray-50 rounded-lg px-3 py-2">
+              <div className="text-left min-w-0">
+                <p className="text-xs text-gray-400 mb-0.5">Booking ID</p>
+                <code className="text-xs font-mono text-gray-600 break-all">{uid}</code>
+              </div>
+              <button
+                onClick={() => copyUid(uid)}
+                className="flex-shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-200 transition-colors"
+                aria-label="Copy booking ID"
+              >
+                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+              </button>
+            </div>
           )}
         </div>
 

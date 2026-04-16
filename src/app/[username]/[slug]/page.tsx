@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { format } from 'date-fns';
-import { Clock, MapPin, Globe, ChevronRight, Video, Phone, User } from 'lucide-react';
+import { Clock, MapPin, Globe, ChevronRight, Video, Phone, User, ChevronDown } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
 import Calendar from '@/components/booking/Calendar';
 import TimeSlots from '@/components/booking/TimeSlots';
 import BookingForm from '@/components/booking/BookingForm';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { getDurationLabel } from '@/lib/utils';
+import { TIMEZONES } from '@/lib/constants';
 
 interface UserData {
   id: string;
@@ -63,6 +64,11 @@ export default function PublicBookingPage() {
 
   // Mobile step tracker: starts at calendar (info panel is shown above on mobile)
   const [mobileStep, setMobileStep] = useState<MobileStep>('calendar');
+
+  // Booker's selected timezone (defaults to browser timezone)
+  const [bookerTimezone, setBookerTimezone] = useState<string>(() => {
+    try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return 'UTC'; }
+  });
 
   // Fetch event type + availability
   useEffect(() => {
@@ -163,6 +169,23 @@ export default function PublicBookingPage() {
           </div>
         </div>
 
+        {/* Booker timezone selector */}
+        <div className="mt-4 pt-4 border-t border-gray-100">
+          <p className="text-xs text-gray-400 mb-1.5">Your timezone</p>
+          <div className="relative">
+            <select
+              value={bookerTimezone}
+              onChange={(e) => setBookerTimezone(e.target.value)}
+              className="w-full text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 pr-8 appearance-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            >
+              {TIMEZONES.map((tz) => (
+                <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+          </div>
+        </div>
+
         {eventType.description && (
           <p className="text-sm text-gray-500 mt-4 pt-4 border-t border-gray-100 leading-relaxed">
             {eventType.description}
@@ -230,6 +253,7 @@ export default function PublicBookingPage() {
                           loading={slotsLoading}
                           selectedSlot={selectedSlot}
                           onSelectSlot={(slot) => { setSelectedSlot(slot.time); setMobileStep('form'); }}
+                          timezone={bookerTimezone}
                         />
                       </>
                     ) : (

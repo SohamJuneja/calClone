@@ -16,6 +16,16 @@ interface TimeSlotsProps {
   loading: boolean;
   selectedSlot: string | null;
   onSelectSlot: (slot: TimeSlot) => void;
+  timezone?: string;
+}
+
+function formatSlotTime(isoString: string, timezone: string): string {
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: timezone,
+  }).format(new Date(isoString));
 }
 
 export default function TimeSlots({
@@ -24,6 +34,7 @@ export default function TimeSlots({
   loading,
   selectedSlot,
   onSelectSlot,
+  timezone,
 }: TimeSlotsProps) {
   const available = slots.filter((s) => s.available);
 
@@ -46,6 +57,7 @@ export default function TimeSlots({
         <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
           {available.map((slot) => {
             const isSelected = selectedSlot === slot.time;
+            const label = timezone ? formatSlotTime(slot.time, timezone) : slot.label;
             return (
               <button
                 key={slot.time}
@@ -57,7 +69,7 @@ export default function TimeSlots({
                     : 'bg-white text-gray-700 border-gray-200 hover:border-brand-400 hover:text-brand-700',
                 )}
               >
-                {slot.label}
+                {label}
               </button>
             );
           })}
