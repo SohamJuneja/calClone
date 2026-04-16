@@ -1,0 +1,115 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// User – the "admin" (pre-seeded, no auth needed)
+// ─────────────────────────────────────────────
+model User {
+  id           String         @id @default(cuid())
+  name         String
+  email        String         @unique
+  username     String         @unique
+  bio          String?
+  timezone     String         @default("UTC")
+  avatar       String?
+  eventTypes   EventType[]
+  availability Availability[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@map("users")
+}
+
+// ─────────────────────────────────────────────
+// EventType – a schedulable meeting type
+// ─────────────────────────────────────────────
+model EventType {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  slug        String
+  description String?
+  duration    Int // in minutes
+  color       String    @default("#6366f1")
+  location    String?   @default("Google Meet")
+  isActive    Boolean   @default(true)
+  bookings    Booking[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, slug])
+  @@map("event_types")
+}
+
+// ─────────────────────────────────────────────
+// Availability – weekly schedule per user
+// ─────────────────────────────────────────────
+model Availability {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int // 0=Sun, 1=Mon, …, 6=Sat
+  startTime   String // "09:00"
+  endTime     String // "17:00"
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, dayOfWeek])
+  @@map("availability")
+}
+
+// ─────────────────────────────────────────────
+// DateOverride – block or customise a specific date
+// ─────────────────────────────────────────────
+model DateOverride {
+  id          String   @id @default(cuid())
+  userId      String
+  date        DateTime @db.Date
+  isBlocked   Boolean  @default(false)
+  startTime   String? // null means use default
+  endTime     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@map("date_overrides")
+}
+
+// ─────────────────────────────────────────────
+// Booking – a confirmed / cancelled appointment
+// ─────────────────────────────────────────────
+model Booking {
+  id            String        @id @default(cuid())
+  uid           String        @unique @default(cuid())
+  eventTypeId   String
+  eventType     EventType     @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  bookerName    String
+  bookerEmail   String
+  startTime     DateTime
+  endTime       DateTime
+  status        BookingStatus @default(CONFIRMED)
+  notes         String?
+  cancelReason  String?
+  rescheduledTo String? // uid of the new booking after rescheduling
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
