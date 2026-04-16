@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import { apiSuccess, apiError, isValidSlug } from '@/lib/utils';
 import { DEFAULT_USER_ID } from '@/lib/constants';
 import { z } from 'zod';

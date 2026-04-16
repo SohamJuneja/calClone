@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server';
+
+export const dynamic = 'force-dynamic';
 import { startOfDay, endOfDay, addMinutes } from 'date-fns';
 import prisma from '@/lib/prisma';
 import { apiSuccess, apiError, generateTimeSlots } from '@/lib/utils';

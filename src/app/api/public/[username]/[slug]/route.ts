@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import { apiSuccess, apiError } from '@/lib/utils';
 
 interface RouteContext {

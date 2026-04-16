@@ -1,4 +1,6 @@
 import prisma from '@/lib/prisma';
+
+export const dynamic = 'force-dynamic';
 import { apiSuccess, apiError } from '@/lib/utils';
 import { DEFAULT_USER_ID } from '@/lib/constants';
 
